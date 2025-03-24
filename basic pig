@@ -1,0 +1,31 @@
+# 1️⃣ Start Hadoop and Pig
+start-dfs.sh
+start-yarn.sh
+pig -x local   # OR pig -x mapreduce
+
+# 2️⃣ Create and upload input file to HDFS
+echo -e "1,John,Manager,50000\n2,Jane,Developer,60000\n3,Mike,Analyst,45000\n4,Sara,Developer,70000" > employees.txt
+hdfs dfs -mkdir -p /user/pig/input
+hdfs dfs -put employees.txt /user/pig/input/
+hdfs dfs -ls /user/pig/input/
+hdfs dfs -cat /user/pig/input/employees.txt
+
+# 3️⃣ Create Pig script
+echo "
+employees = LOAD '/user/pig/input/employees.txt' USING PigStorage(',') AS (id:int, name:chararray, role:chararray, salary:int);
+high_earners = FILTER employees BY salary > 50000;
+grouped_roles = GROUP employees BY role;
+role_count = FOREACH grouped_roles GENERATE group AS role, COUNT(employees) AS total_employees;
+STORE high_earners INTO '/user/pig/output/high_earners' USING PigStorage(',');
+STORE role_count INTO '/user/pig/output/role_counts' USING PigStorage(',');
+" > employee_analysis.pig
+
+# 4️⃣ Run Pig script
+pig -x mapreduce employee_analysis.pig  # OR pig -x local employee_analysis.pig
+
+# 5️⃣ View output from HDFS
+hdfs dfs -cat /user/pig/output/high_earners/part-r-00000
+hdfs dfs -cat /user/pig/output/role_counts/part-r-00000
+
+# 6️⃣ Clean up (if needed)
+hdfs dfs -rm -r /user/pig/output
