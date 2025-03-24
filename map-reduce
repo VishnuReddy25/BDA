@@ -1,0 +1,56 @@
+code for finding jar file
+
+find /usr/local/hadoop -name "hadoop-streaming-*.jar"
+----------------------------------------------------------------------------------------------------------------------
+basic map-reduce instruction 
+
+touch word.txt
+hadoop fs -mkdir -p /wordcount-py
+hadoop fs -copyFromLocal word.txt /wordcount-py
+
+hadoop jar /usr/local/hadoop/share/hadoop/tools/lib/hadoop-streaming-2.7.3.jar -file wcmap.py -mapper wcmap.py -file wcred.py -reducer wcred.py -input /wordcount/ -output /wordcount/output
+
+hadoop fs -cat /wordcount/output/part-00000
+-------------------------------------------------------------------------------------------------------------------------
+reducer program 
+
+#!/usr/bin/env python2
+
+from operator import itemgetter
+import sys
+
+current_word = None
+current_count = 0
+word = None
+
+for line in sys.stdin:
+    line = line.strip()
+    word, count = line.split('\t', 1)
+
+    try:
+        count = int(count)
+    except ValueError:
+        continue
+
+    if current_word == word:
+        current_count += count
+    else:
+        if current_word:
+            print '%s\t%s' % (current_word, current_count)
+        current_count = count
+        current_word = word
+
+if current_word == word:
+    print '%s\t%s' % (current_word, current_count)
+----------------------------------------------------------------------------------------------------------------------------------
+mapper 
+
+import sys
+
+for line in sys.stdin:
+    line = line.strip()
+    words = line.split()
+    for word in words:
+        print '%s\t%s' % (word, 1)
+-------------------------------------------------------------------------------------------------------------------------------------
+
