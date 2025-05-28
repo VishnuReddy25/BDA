@@ -21,3 +21,8 @@ install new-> maven ->
 
 cooedinates : graphframes:graphframes:0.8.2-spark3.1-s_2.12
 respository : https://repo1.maven.org/maven2/
+
+HIVE:
+(base) hduser@system30-OptiPlex-3050:~$ sudo rm -Rf ~/metastore_db/
+[sudo] password for hduser: 
+(base) hduser@system30-OptiPlex-3050:~$ $HIVE_HOME/bin/schematool -initSchema -dbType derby 
