@@ -1,0 +1,23 @@
+from pyspark.sql import SparkSession
+
+# Step 1: Start a Spark session
+spark = SparkSession.builder.appName("WordCount").getOrCreate()
+
+# Step 2: Read input text file
+rdd = spark.sparkContext.textFile("input.txt")  # Replace with your HDFS or local path
+
+# Step 3: Split lines into words
+words = rdd.flatMap(lambda line: line.split())
+
+# Step 4: Map each word to a (word, 1) pair
+word_pairs = words.map(lambda word: (word, 1))
+
+# Step 5: Reduce by key (word) to get word counts
+word_counts = word_pairs.reduceByKey(lambda a, b: a + b)
+
+# Step 6: Collect and display the results
+for word, count in word_counts.collect():
+    print(f"{word}: {count}")
+
+# Optional: Save to output file
+# word_counts.saveAsTextFile("output_dir")
